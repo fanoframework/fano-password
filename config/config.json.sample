@@ -1,0 +1,18 @@
+{
+    "appName" : "My App",
+
+    "baseUrl" : "http://myapp.fano",
+
+    "secretKey" : "replace with your own secret key",
+
+    "session" : {
+        "name" : "fano_sess",
+        "dir" : "/home/zamroni/fun/fanoframework/examples/fano-password/storages/sessions/"
+    },
+
+    "cookie" : {
+        "name" : "fano_sess",
+        "domain" : "myapp.fano",
+        "maxAge" : 3600
+    }
+}
