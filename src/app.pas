@@ -9,9 +9,6 @@ program app;
 
 uses
 
-    {$IFDEF UNIX}
-    cthreads,
-    {$ENDIF}
     fano,
     bootstrap;
 

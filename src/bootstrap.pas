@@ -1,5 +1,5 @@
 (*!------------------------------------------------------------
- * My App ([[APP_URL]])
+ * [[APP_NAME]] ([[APP_URL]])
  *
  * @link      [[APP_REPOSITORY_URL]]
  * @copyright Copyright (c) [[COPYRIGHT_YEAR]] [[COPYRIGHT_HOLDER]]
@@ -17,13 +17,12 @@ type
 
     TAppServiceProvider = class(TDaemonAppServiceProvider)
     protected
-        function buildAppConfig(const container : IDependencyContainer) : IAppConfiguration; override;
+        function buildAppConfig(const ctnr : IDependencyContainer) : IAppConfiguration; override;
         function buildDispatcher(
-            const container : IDependencyContainer;
+            const ctnr : IDependencyContainer;
             const routeMatcher : IRouteMatcher;
             const config : IAppConfiguration
         ) : IDispatcher; override;
-
     public
         procedure register(const container : IDependencyContainer); override;
     end;
@@ -32,7 +31,7 @@ type
     public
         procedure buildRoutes(
             const container : IDependencyContainer;
-            const router : IRouter
+            const router  : IRouter
         ); override;
     end;
 
@@ -44,50 +43,59 @@ uses
     (*! -------------------------------
      *   controllers factory
      *----------------------------------- *)
-    {---- put your controller factory here ---};
+    {---- put your controller factory here ---},
+    HomeControllerFactory,
+    HomeViewFactory,
+    SignInControllerFactory,
+    SignInViewFactory,
+    AuthControllerFactory,
+    AuthViewFactory,
+    SignOutControllerFactory,
+    AuthOnlyMiddlewareFactory;
 
-
-    function TAppServiceProvider.buildAppConfig(const container : IDependencyContainer) : IAppConfiguration;
+    function TAppServiceProvider.buildAppConfig(const ctnr : IDependencyContainer) : IAppConfiguration;
     begin
-        container.add(
+        ctnr.add(
             'config',
             TJsonFileConfigFactory.create(
                 getCurrentDir() + '/config/config.json'
             )
         );
-        result := container['config'] as IAppConfiguration;
-
+        result := ctnr.get('config') as IAppConfiguration;
     end;
+
     function TAppServiceProvider.buildDispatcher(
-        const container : IDependencyContainer;
+        const ctnr : IDependencyContainer;
         const routeMatcher : IRouteMatcher;
         const config : IAppConfiguration
     ) : IDispatcher;
     begin
-        container.add('appMiddlewares', TMiddlewareListFactory.create());
+        ctnr.add('appMiddlewares', TMiddlewareListFactory.create());
 
-        container.add(
+        ctnr.add('encrypter', (TBlowfishEncrypterFactory.create()).secretKey(config.getString('secretKey')));
+
+        ctnr.add(
             'sessionManager',
-            TJsonFileSessionManagerFactory.create(
-                config.getString('session.name'),
-                config.getString('session.dir')
+            TCookieSessionManagerFactory.create(
+                TJsonSessionFactory.create(),
+                ctnr['encrypter'] as IEncrypter,
+                ctnr['encrypter'] as IDecrypter,
+                config.getString('session.name')
             )
         );
 
-        container.add(
+        ctnr.add(
             GuidToString(IDispatcher),
             TSessionDispatcherFactory.create(
-                container['appMiddlewares'] as IMiddlewareLinkList,
-                routeMatcher,
+                ctnr['appMiddlewares'] as IMiddlewareLinkList,
+                getRouteMatcher(),
                 TRequestResponseFactory.create(),
-                container['sessionManager'] as ISessionManager,
-                (TCookieFactory.create()).domain(
-                    config.getString('cookie.domain')
-                ),
+                ctnr['sessionManager'] as ISessionManager,
+                (TCookieFactory.create()).domain(config.getString('cookie.domain')),
                 config.getInt('cookie.maxAge')
             )
         );
-        result := container[GuidToString(IDispatcher)] as IDispatcher;
+        result := ctnr.get(GuidToString(IDispatcher)) as IDispatcher;
     end;
 
     procedure TAppServiceProvider.register(const container : IDependencyContainer);
@@ -102,4 +110,5 @@ uses
     begin
         {$INCLUDE Routes/routes.inc}
     end;
+
 end.

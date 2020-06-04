@@ -8,4 +8,5 @@
 
 {%dependencies.inc}
 
-{---put your middleware-related dependencies registration here---}
+{---put your dependencies registration here---}
+container.add('authOnlyMiddleware', TAuthOnlyMiddlewareFactory.create());

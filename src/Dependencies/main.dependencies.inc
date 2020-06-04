@@ -5,6 +5,8 @@
  * @copyright Copyright (c) [[COPYRIGHT_YEAR]] [[COPYRIGHT_HOLDER]]
  * @license   [[LICENSE_URL]] ([[LICENSE]])
  *------------------------------------------------------------- *)
-
-{---put your main dependencies registration here---}
-{ container.add('db', TMySqlDbFactory.create()); }
+//container.add('passwHash', TPbkdf2PasswordHashFactory.create());
+container.add('passwHash', TArgon2iPasswordHashFactory.create());
+//container.add('passwHash', TScryptPasswordHashFactory.create());
+//container.add('passwHash', TSha2PasswordHashFactory.create().use512());
+//container.add('passwHash', TSha2PasswordHashFactory.create().use256());

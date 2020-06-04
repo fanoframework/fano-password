@@ -8,4 +8,4 @@
 
 {%dependencies.inc}
 
-{---put your data model-related dependencies registration here---}
+{---put your dependencies registration here---}
